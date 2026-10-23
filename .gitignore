@@ -1,0 +1,12 @@
+/*
+!/.gitignore
+!/README.md
+!/outputs/
+/outputs/*
+!/outputs/AchievementDemo/
+!/outputs/Verification/
+**/.DS_Store
+**/xcuserdata/
+**/*.xcuserstate
+**/DerivedData/
+**/build/
