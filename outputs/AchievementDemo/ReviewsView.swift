@@ -1,6 +1,29 @@
 import SwiftUI
 import UIKit
 
+private enum AchievementAnimation: String, CaseIterable, Identifiable {
+    case original, transfer, light
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .original: "01 · Исходная"
+        case .transfer: "02 · Перелив"
+        case .light: "03 · Световой проход"
+        }
+    }
+}
+
+/// New motion treats the badge and its level as one object. Neutral values preserve the original.
+private struct AchievementMotion {
+    var lightPhase: CGFloat = 0
+    var lightOpacity: Double = 0
+    var emblemScale: CGFloat = 1
+    var transferPhase: CGFloat = 0
+    var transferActive = false
+}
+
 @MainActor
 struct ReviewsView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -20,6 +43,8 @@ struct ReviewsView: View {
     @State private var celebrationTask: Task<Void, Never>?
     @State private var automationTask: Task<Void, Never>?
     @State private var automationStarted = false
+    @AppStorage("achievement.animation.variant") private var animationVariant: AchievementAnimation = .original
+    @State private var motion = AchievementMotion()
 
     private let confettiEnabled = false
     private let automaticallyCompletes: Bool
@@ -63,6 +88,7 @@ struct ReviewsView: View {
                         numberScale: numberScale,
                         rewardFocus: rewardFocus,
                         confettiStart: confettiStart,
+                        motion: motion,
                         reduceMotion: reduceMotion
                     )
                     .zIndex(10)
@@ -95,6 +121,24 @@ struct ReviewsView: View {
             .navigationTitle("Отзывы")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        Picker("Анимация", selection: $animationVariant) {
+                            ForEach(AchievementAnimation.allCases) { variant in
+                                Text(variant.title).tag(variant)
+                            }
+                        }
+                        Divider()
+                        Button("Повторить 2 → 3", systemImage: "arrow.clockwise") {
+                            replayLevelUp()
+                        }
+                    } label: {
+                        Label("Анимация", systemImage: "slider.horizontal.3")
+                            .font(.custom("Onest-Medium", size: 14, relativeTo: .subheadline))
+                    }
+                    .accessibilityValue(animationVariant.title)
+                    .accessibilityIdentifier("animation-menu")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("Демо") {
                         Button("Начать с нуля") { reset(initialCount: 0) }
@@ -115,6 +159,7 @@ struct ReviewsView: View {
             else { cancelEffects() }
         }
         .onChange(of: reduceMotion) { _, _ in cancelEffects() }
+        .onChange(of: animationVariant) { _, _ in cancelEffects() }
     }
 
     private var visibleProducts: [DemoProduct] {
@@ -162,6 +207,12 @@ struct ReviewsView: View {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                     return
                 }
+                if animationVariant != .original {
+                    try await playAlternative(animationVariant)
+                    productCount += achievement.target
+                    settlePresentation()
+                    return
+                }
                 withAnimation(.easeOut(duration: 0.65)) { displayedProgress = 1 }
                 try await Task.sleep(for: .milliseconds(950))
                 try Task.checkCancellation()
@@ -204,6 +255,74 @@ struct ReviewsView: View {
         }
     }
 
+    /// Each pause is cancellable, so changing variants cannot leave a stale level update.
+    private func pause(_ milliseconds: Int) async throws {
+        try await Task.sleep(for: .milliseconds(milliseconds))
+        try Task.checkCancellation()
+    }
+
+    private func revealLevel() {
+        withAnimation(.easeInOut(duration: 0.38)) {
+            displayedLevel = achievement.level
+            displayedProgress = 0
+        }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        UIAccessibility.post(notification: .announcement, argument: "Уровень \(achievement.level). До следующего уровня оцените 20 товаров.")
+    }
+
+    private func playAlternative(_ variant: AchievementAnimation) async throws {
+        guard variant != .original else { return }
+        // Complete the last step, then give the full bar a moment to register.
+        withAnimation(.easeOut(duration: 0.44)) { displayedProgress = 1 }
+        try await pause(600)
+
+        switch variant {
+        case .original:
+            return
+        case .transfer:
+            // The ribbon initially occupies exactly the full bar. Swap without a flash.
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                motion.transferActive = true
+                displayedProgress = 0
+            }
+            withAnimation(.linear(duration: 0.9)) { motion.transferPhase = 1 }
+            withAnimation(.easeIn(duration: 0.9)) { motion.emblemScale = 1.08 }
+            try await pause(900)
+            motion.transferActive = false
+        case .light:
+            // One light travels towards the badge, followed by the same level reveal.
+            withAnimation(.easeOut(duration: 0.12)) { motion.lightOpacity = 1 }
+            withAnimation(.easeInOut(duration: 0.68)) { motion.lightPhase = 1 }
+            try await pause(680)
+            withAnimation(.easeOut(duration: 0.12)) { motion.lightOpacity = 0 }
+        }
+
+        // A single clear accent: the whole emblem grows, the digit rolls, then it settles.
+        // No independent bounce, tilt, halo, or displacement of the artwork.
+        withAnimation(.timingCurve(0.16, 1, 0.3, 1, duration: 0.28)) {
+            motion.emblemScale = 1.28
+        }
+        try await pause(90)
+        revealLevel()
+        try await pause(520)
+        withAnimation(.easeInOut(duration: 0.48)) { motion.emblemScale = 1 }
+        try await pause(480)
+    }
+
+    private func replayLevelUp() {
+        reset(initialCount: 39)
+        // Give the initial state a frame before starting the same real rating path.
+        automationTask = Task { @MainActor in
+            do {
+                try await pause(350)
+                guard scenePhase == .active, let product = DemoProduct.all.first else { return }
+                rate(productID: product.id, stars: 5)
+            } catch { }
+        }
+    }
+
     private func reset(initialCount: Int) {
         cancelEffects()
         achievement.reset(initialCount: initialCount)
@@ -231,6 +350,7 @@ struct ReviewsView: View {
             badgeScale = 1
             numberScale = 1
             rewardFocus = 0
+            motion = AchievementMotion()
             confettiStart = nil
             transitioning = false
         }
@@ -267,12 +387,15 @@ private struct AchievementCard: View {
     let numberScale: CGFloat
     let rewardFocus: CGFloat
     let confettiStart: Date?
+    let motion: AchievementMotion
     let reduceMotion: Bool
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             badge
+                .scaleEffect(reduceMotion ? 1 : motion.emblemScale)
                 .offset(y: 8)
+                .anchorPreference(key: TransferAnchors.self, value: .bounds) { ["badge": $0] }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Мастер оценок")
@@ -300,8 +423,19 @@ private struct AchievementCard: View {
                                 .scaleEffect(x: max(0, min(1, progress)), y: 1, anchor: .leading)
                         }
                         .clipShape(Capsule())
+                        .overlay {
+                            Capsule()
+                                .fill(LinearGradient(
+                                    colors: [.clear, .white, .clear],
+                                    startPoint: .leading, endPoint: .trailing
+                                ))
+                                .frame(width: 34)
+                                .position(x: 17 + (proxy.size.width - 34) * (1 - motion.lightPhase), y: 3.5)
+                                .opacity(reduceMotion ? 0 : motion.lightOpacity)
+                        }
                 }
                 .frame(height: 7)
+                .anchorPreference(key: TransferAnchors.self, value: .bounds) { ["bar": $0] }
                 .padding(.top, 6)
                 .accessibilityLabel("Прогресс достижения")
                 .accessibilityValue("Оценено \(count) из \(target) товаров")
@@ -313,6 +447,17 @@ private struct AchievementCard: View {
         .background {
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color("LayerFloor1"))
+        }
+        .overlayPreferenceValue(TransferAnchors.self) { anchors in
+            GeometryReader { proxy in
+                if !reduceMotion,
+                   let bar = anchors["bar"], let badge = anchors["badge"] {
+                    XPTransfer(phase: motion.transferPhase, bar: proxy[bar], badge: proxy[badge])
+                        .opacity(motion.transferActive ? 1 : 0)
+                }
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
         }
         .overlay {
             WidgetWhiteSweep(phase: wavePhase)
@@ -377,6 +522,62 @@ private struct AchievementCard: View {
         }
         .frame(width: 45, height: 43)
 
+    }
+}
+
+/// Layout anchors keep the stream attached to the card at every text size and width.
+private struct TransferAnchors: PreferenceKey {
+    static var defaultValue: [String: Anchor<CGRect>] { [:] }
+    static func reduce(value: inout [String: Anchor<CGRect>], nextValue: () -> [String: Anchor<CGRect>]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+/// A single ribbon is the bar itself, pulled into the emblem. Both ends use the
+/// same smooth path; no random particles or additional decoration compete with it.
+private struct XPTransfer: View, Animatable {
+    var phase: CGFloat
+    let bar: CGRect
+    let badge: CGRect
+
+    var animatableData: CGFloat {
+        get { phase }
+        set { phase = newValue }
+    }
+
+    private func smooth(_ value: CGFloat) -> CGFloat {
+        let p = min(1, max(0, value))
+        return p * p * (3 - 2 * p)
+    }
+
+    var body: some View {
+        Canvas { context, size in
+            guard phase < 1 else { return }
+            let p = min(1, max(0, phase))
+            let target = CGPoint(x: badge.midX, y: badge.midY)
+            let startX = bar.minX + bar.height / 2
+            let endX = bar.maxX - bar.height / 2
+            let head = startX + (target.x - startX) * smooth(p / 0.42)
+            let tail = endX + (target.x - endX) * smooth(p)
+            guard tail > head else { return }
+            var ribbon = Path()
+            for index in 0...64 {
+                let x = head + (tail - head) * CGFloat(index) / 64
+                let bend = smooth((x - target.x) / max(1, startX - target.x))
+                let point = CGPoint(x: x, y: target.y + (bar.midY - target.y) * bend)
+                if index == 0 { ribbon.move(to: point) }
+                else { ribbon.addLine(to: point) }
+            }
+            // The stream disappears behind the emblem rather than painting over its star.
+            let edge = badge.maxX - 6
+            context.clip(to: Path(CGRect(x: edge, y: 0, width: max(0, size.width - edge), height: size.height)))
+            let thickness = bar.height * (1 - 0.55 * smooth(p))
+            context.stroke(ribbon, with: .linearGradient(
+                Gradient(colors: [Color(red: 109 / 255, green: 203 / 255, blue: 1), Color(red: 0, green: 85 / 255, blue: 1)]),
+                startPoint: CGPoint(x: 0, y: bar.midY - thickness / 2),
+                endPoint: CGPoint(x: 0, y: bar.midY + thickness / 2)
+            ), style: StrokeStyle(lineWidth: thickness, lineCap: .round, lineJoin: .round))
+        }
     }
 }
 

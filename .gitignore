@@ -5,6 +5,7 @@
 /outputs/*
 !/outputs/AchievementDemo/
 !/outputs/Verification/
+!/outputs/AnimationPreview/
 **/.DS_Store
 **/xcuserdata/
 **/*.xcuserstate

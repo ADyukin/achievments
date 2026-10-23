@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Мастер оценок — варианты анимации</title>
+<style>
+@font-face{font-family:Onest;src:url('__FONT__') format('truetype');font-weight:100 900;font-display:swap}*{box-sizing:border-box}body{margin:0;background:#e9edf2;color:#070707;font-family:Onest,system-ui,sans-serif}main{max-width:980px;margin:auto;padding:28px 20px;display:grid;grid-template-columns:1fr 393px;gap:40px;align-items:start}h1{font-size:28px;line-height:1.2;margin:0 0 16px}p{line-height:1.55;color:#536172;font-size:14px}label{display:block;font-size:13px;margin:18px 0 7px}select,button{font:inherit;font-size:14px;border:1px solid #c8d1df;border-radius:12px;background:white;padding:11px 12px;cursor:pointer}select{width:100%}button.primary{background:#0055ff;color:white;border-color:#0055ff} .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.check{display:flex;gap:8px;align-items:center}.note{font-size:12px}.phone{width:393px;height:760px;background:#f2f2f7;border-radius:30px;border:1px solid #d2d8e0;box-shadow:0 15px 45px #1b2f4820;overflow:hidden}.nav{height:58px;display:flex;align-items:center;justify-content:center;font-weight:600;background:#f7f7f9}.screen{height:calc(100% - 58px);padding:8px;overflow:auto;scrollbar-width:none}.tabs{display:flex;background:#e4e4e9;border-radius:8px;padding:2px;margin:0 8px 16px;gap:2px}.tabs button{font-size:13px;padding:6px 0;width:50%;border:0;border-radius:6px;background:transparent}.tabs .active{background:white;box-shadow:0 1px 3px #0002}.card{position:relative;background:white;border-radius:24px;padding:16px;display:flex;gap:12px;min-height:81px;isolation:isolate}.badge{width:45px;height:43px;flex:none;position:relative;margin-top:8px}.badge-clip{position:absolute;inset:0;overflow:hidden}.badge-art{position:absolute;width:45px;height:43px;transform-origin:50% 50%}.badge-art img{position:absolute;width:48.672px;height:48.491px;left:-1.836px;top:-2.743px}.number{overflow:hidden;position:absolute;left:16px;top:-12px;width:15px;height:15.79px;border-radius:4.736px;background:#80b60e;color:white;font-size:12.63px;font-weight:700;line-height:15.79px;text-align:center;z-index:3;transform-origin:center}.digit{display:block;transform:translateY(calc(16px * (1 - var(--roll,1))))}.number[data-roll]::before{content:"2";position:absolute;inset:0;transform:translateY(calc(-16px * var(--roll)));}.copy{flex:1;min-width:0}.title{font-weight:600;font-size:14px;line-height:16px}.subtitle{font-size:12px;line-height:16px;color:#001a3499;margin-top:2px;white-space:nowrap}.bar{height:7px;background:#ccd6e466;border-radius:10px;position:relative;margin-top:8px;transform-origin:center}.fill{position:absolute;inset:0;background:linear-gradient(#6dcbff,#0055ff);border-radius:10px;transform-origin:left}.light{position:absolute;width:34px;inset-block:0;background:linear-gradient(90deg,transparent,white,transparent);opacity:0}.sweep-clip{position:absolute;inset:0;overflow:hidden;border-radius:24px;pointer-events:none}.sweep{position:absolute;width:66px;height:300%;top:-100%;background:linear-gradient(90deg,transparent,#ffffffd9,#ffffff66,transparent 65%,transparent 80%,#ffffff80 81%,#ffffff80 99%,transparent);transform:skewX(20deg);left:-100px}.particles{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}h2{font-size:20px;margin:16px 8px 12px;font-weight:600}.product{background:white;border-radius:24px;padding:16px;margin-bottom:12px}.product-top{display:flex;gap:12px;align-items:start}.product-image{width:64px;height:72px;object-fit:contain;border-radius:12px}.symbol{display:flex;align-items:center;justify-content:center;color:#667786;background:#f2f2f7;font-size:29px;flex:none}.product-title{font-size:14px;font-weight:500;margin:0 0 5px}.detail{font-size:12px;color:#001a3499;line-height:16px}.saved{font-size:11px;color:#80b60e;margin-top:5px}.stars{display:flex;gap:8px;margin-top:12px}.star{border:0;background:transparent;color:#001a3499;font-size:30px;padding:0;width:44px;min-height:44px;line-height:44px}.star.rated{color:#ff9500}.star:disabled{cursor:default}.status{min-height:22px;margin-top:16px;font-size:13px;color:#536172}a{color:#0055ff}.motion-note{margin-top:4px}@media(max-width:760px){main{display:flex;flex-direction:column;align-items:center;padding:20px 12px;gap:22px}.settings{max-width:393px;width:100%}.phone{max-width:100%;width:393px;height:720px}.subtitle{white-space:normal}h1{font-size:24px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+<main><section class="settings"><h1>Мастер оценок</h1><p>Два новых направления и исходная анимация для сравнения. Это браузерное превью движения; нативная версия — в SwiftUI.</p><label for="variant">Анимация</label><select id="variant"><option value="original">01 · Исходная</option><option value="transfer" selected>02 · Перелив</option><option value="light">03 · Световой проход</option></select><p class="note" id="direction">Полоса целиком перетекает в значок. Один акцент — новый уровень.</p><div class="controls"><button class="primary" id="replay">Повторить 2 → 3</button><button id="pause">Пауза</button><button id="reset">Сбросить</button></div><label for="speed">Скорость просмотра</label><select id="speed"><option value="1">1×</option><option value="0.5">0,5×</option></select><label class="check"><input type="checkbox" id="reduced"> Уменьшение движения</label><p class="note motion-note">Системная настройка Reduce Motion учитывается автоматически. Переключение варианта и уход со вкладки отменяют текущий переход.</p><div class="status" id="status" role="status" aria-live="polite"></div><p class="note">Референсы: <a href="https://60fps.design/shots/duolingo-super-score-animation">Duolingo</a> · <a href="https://60fps.design/shots/brilliant-streak-pulse-animation">Brilliant</a> · <a href="https://developer.apple.com/videos/play/wwdc2023/10158/">Apple Springs</a>.</p></section><section class="phone" aria-label="Превью экрана отзывов"><header class="nav">Отзывы</header><div class="screen"><div class="tabs"><button class="active" id="waiting">Ждут оценки</button><button id="reviews">Мои отзывы</button></div><div class="card" id="card"><div class="badge" id="badge"><div class="badge-clip"><div class="badge-art" id="art"><img src="__BADGE__" alt=""></div></div><div class="number" id="number" aria-label="Уровень достижения"><span class="digit">2</span></div></div><div class="copy"><div class="title">Мастер оценок</div><div class="subtitle" id="subtitle">До 3-го уровня — оцените 1 товар</div><div class="bar" id="bar"><div class="fill" id="fill"></div><div class="light" id="light"></div></div></div><div class="sweep-clip"><div class="sweep" id="sweep"></div></div><canvas class="particles" id="particles" aria-hidden="true"></canvas></div><h2 id="productHeading">Ваши покупки</h2><div id="products"></div></div></section></main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), el=Object.fromEntries(['variant','pause','speed','reduced','status','card','badge','art','number','subtitle','bar','fill','light','sweep','particles'].map(x=>[x,$(x)]));
+const ctx=el.particles.getContext('2d'), media=matchMedia('(prefers-reduced-motion: reduce)'), durations={original:5450,transfer:2590,light:2370};
+let raf=0,last=0,time=0,playing=false,paused=false,completed=false,rated=false,tab=0,forcedReduce=false,stars=5;
+const clamp=x=>Math.max(0,Math.min(1,x)), lerp=(a,b,p)=>a+(b-a)*p, ease=p=>1-Math.pow(1-p,3), smooth=p=>p*p*(3-2*p), spring=p=>p>=1?1:1-Math.exp(-6*p)*Math.cos(9*p);
+function segment(t,a,b,from,to,curve=ease){return lerp(from,to,curve(clamp((t-a)/(b-a))))}
+function reduced(){return forcedReduce||media.matches}
+function baseline(){return{progress:.95,level:2,badgeScale:1,numberScale:1,focus:0,emblemScale:1,light:0,lightOpacity:0,wave:0,transfer:-1}}
+function frame(t,v){const s=baseline();s.progress=1;
+if(v==='original'){s.progress=t<650?segment(t,0,650,.95,1):t<1400?1:0;s.badgeScale=t<950?1:t<1850?segment(t,950,1450,1,1.25,spring):t<3150?segment(t,1850,2350,1.25,1,spring):1;s.wave=clamp((t-950)/900);s.focus=t<1850?0:t<3150?segment(t,1850,2350,0,1,spring):segment(t,3150,3650,1,0,spring);s.numberScale=1+1.2*s.focus;s.level=t>=2450?3:2;}
+if(v==='transfer'||v==='light'){
+ const arrival=v==='transfer'?1500:1280;
+ s.progress=t<600?segment(t,0,440,.95,1):v==='transfer'?0:t<arrival+90?1:segment(t,arrival+90,arrival+470,1,0,smooth);
+ if(v==='transfer'){
+  s.transfer=t>=600&&t<1500?(t-600)/900:-1;
+  s.emblemScale=segment(t,600,1500,1,1.08,p=>p*p);
+ }else{
+  s.light=segment(t,600,1280,0,1,smooth);
+  s.lightOpacity=t<1280?segment(t,600,720,0,1):segment(t,1280,1400,1,0);
+ }
+ if(t>=arrival)s.emblemScale=t<arrival+610?segment(t,arrival,arrival+280,v==='transfer'?1.08:1,1.28,ease):segment(t,arrival+610,arrival+1090,1.28,1,smooth);
+ s.level=t>=arrival+90?3:2;
+}
+return s;}
+function paint(s){
+ el.fill.style.transform=`scaleX(${s.progress})`;
+ el.art.style.transform=`translateY(${60*s.focus}px) scale(${.85*s.badgeScale})`;
+ el.badge.style.transform=`scale(${s.emblemScale})`;
+ el.number.style.transform=`translate(${-s.focus}px,${20.605*s.focus}px) scale(${s.numberScale})`;
+ el.number.firstElementChild.textContent=s.level;
+ const reveal={original:2450,transfer:1590,light:1370}[el.variant.value];
+ const roll=playing&&s.level===3?smooth(clamp((time-reveal)/380)):1;
+ el.number.style.setProperty('--roll',roll);
+ el.number.toggleAttribute('data-roll',roll<1);
+ el.subtitle.textContent=`До ${s.level+1}-го уровня — оцените ${s.level===2?(rated?'0 товаров':'1 товар'):'20 товаров'}`;
+ el.light.style.left=`calc(${(1-s.light)*100}% - ${(1-s.light)*34}px)`;
+ el.light.style.opacity=s.lightOpacity;
+ el.sweep.style.left=`${-100+s.wave*(el.card.clientWidth+200)}px`;
+ drawTransfer(s.transfer);
+ document.body.dataset.level=s.level;
+ document.body.dataset.progress=s.progress.toFixed(3);
+ document.body.dataset.time=Math.round(time);
+ document.body.dataset.playing=playing;
+}
+function drawTransfer(p){
+ const card=el.card.getBoundingClientRect(),bar=el.bar.getBoundingClientRect(),badge=el.badge.getBoundingClientRect(),dpr=devicePixelRatio||1;
+ const w=Math.round(card.width*dpr),h=Math.round(card.height*dpr);
+ if(el.particles.width!==w||el.particles.height!==h){el.particles.width=w;el.particles.height=h}
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.clearRect(0,0,card.width,card.height);
+ if(p<0||p>=1)return;
+ const target={x:badge.left-card.left+badge.width/2,y:badge.top-card.top+badge.height/2};
+ const barY=bar.top-card.top+bar.height/2;
+ const startX=bar.left-card.left+bar.height/2,endX=bar.right-card.left-bar.height/2;
+ const head=lerp(startX,target.x,smooth(clamp(p/.42))),tail=lerp(endX,target.x,smooth(p));
+ if(tail<=head)return;
+ ctx.save();ctx.beginPath();ctx.rect(badge.right-card.left-6,0,card.width,card.height);ctx.clip();
+ ctx.beginPath();
+ for(let i=0;i<=64;i++){
+  const x=lerp(head,tail,i/64),bend=smooth(clamp((x-target.x)/Math.max(1,startX-target.x))),y=lerp(target.y,barY,bend);
+  if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+ }
+ const thickness=bar.height*(1-.55*smooth(p));
+ const gradient=ctx.createLinearGradient(0,barY-thickness/2,0,barY+thickness/2);
+ gradient.addColorStop(0,'#6dcbff');gradient.addColorStop(1,'#0055ff');
+ ctx.lineWidth=thickness;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=gradient;ctx.stroke();ctx.restore();
+}
+function icon(i){return `<svg class="product-image symbol" viewBox="0 0 64 72" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${i%4===1?'<path d="M32 18 C27 28 20 33 20 41 a12 12 0 0 0 24 0 C44 33 37 28 32 18Z"/>':i%4===2?'<path d="M17 40v-6a15 15 0 0 1 30 0v6"/><rect x="15" y="34" width="7" height="16" rx="3"/><rect x="42" y="34" width="7" height="16" rx="3"/>':'<path d="M18 27h24v16a9 9 0 0 1-9 9h-6a9 9 0 0 1-9-9Z M42 29h4a6 6 0 0 1 0 12h-4 M15 57h34"/>'}</g></svg>`}
+function products(){const names=['Парфюмерная вода','Увлажняющий крем','Беспроводные наушники','Керамическая кружка'],details=['30 мл · Цветочный аромат','Для ежедневного ухода · 50 мл','Белые · В зарядном футляре','350 мл · Молочный цвет'];$('products').innerHTML=Array.from({length:completed?21:1},(_,i)=>{if(tab===1&&(!rated||i!==0))return '';return `<article class="product"><div class="product-top">${i%4===0?'<img class="product-image" src="__PERFUME__" alt="">':icon(i)}<div><div class="product-title">${names[i%4]}</div><div class="detail">${details[i%4]}</div>${rated&&i===0?'<div class="saved">✓ Оценка сохранена</div>':''}</div></div><div class="stars">${[1,2,3,4,5].map(n=>`<button class="star ${rated&&i===0&&n<=stars?'rated':''}" data-star="${n}" aria-label="${names[i%4]}: оценить на ${n} из 5" ${playing||i>0?'disabled':''}>${rated&&i===0&&n<=stars?'★':'☆'}</button>`).join('')}</div></article>`}).join('')||(tab===1?'<div class="product detail">Здесь появятся ваши оценки</div>':'');document.querySelectorAll('[data-star]').forEach(b=>b.onclick=()=>{stars=Number(b.dataset.star);if(!rated)start();else products()});}
+function idle(final=false){const s=baseline();if(final){s.level=3;s.progress=0}paint(s)}
+function stop(final= rated){cancelAnimationFrame(raf);raf=0;playing=false;paused=false;completed=final;el.pause.textContent='Пауза';idle(final);products()}
+function finish(){stop(true);el.status.textContent='Уровень 3. До следующего уровня — 20 товаров.'}
+function tick(now){if(!playing||paused)return;time+=(now-last)*Number(el.speed.value);last=now;if(time>=durations[el.variant.value]){finish();return}paint(frame(time,el.variant.value));raf=requestAnimationFrame(tick)}
+function start(){stop(false);time=0;rated=true;completed=false;playing=true;el.status.textContent=reduced()?'Уровень обновлён без движения.':'Переход 2 → 3';products();if(reduced()){finish();return}paint(frame(0,el.variant.value));last=performance.now();raf=requestAnimationFrame(tick)}
+$('replay').onclick=start;$('reset').onclick=()=>{rated=false;time=0;stop(false);el.status.textContent='До уровня — одна оценка.'};el.variant.onchange=()=>{stop(rated);$('direction').textContent={original:'Исходная последовательность — без изменений.',transfer:'Полоса целиком перетекает в значок. Один акцент — новый уровень.',light:'Свет проходит по полной полосе к значку. Новый уровень завершает движение.'}[el.variant.value];el.status.textContent='Вариант выбран. Нажмите «Повторить 2 → 3».'};el.pause.onclick=()=>{if(!playing)return;paused=!paused;el.pause.textContent=paused?'Продолжить':'Пауза';if(paused)cancelAnimationFrame(raf);else{last=performance.now();raf=requestAnimationFrame(tick)}};el.reduced.onchange=()=>{forcedReduce=el.reduced.checked;stop(rated)};media.addEventListener('change',()=>stop(rated));document.addEventListener('visibilitychange',()=>{if(document.hidden){stop(rated);el.status.textContent='Переход остановлен при уходе со вкладки.'}});window.addEventListener('resize',()=>{if(playing)paint(frame(time,el.variant.value));else idle(completed)});for(const [id,t] of [['waiting',0],['reviews',1]])$(id).onclick=()=>{tab=t;$('waiting').classList.toggle('active',!tab);$('reviews').classList.toggle('active',!!tab);$('productHeading').textContent=tab?'Ваши оценки':'Ваши покупки';products()};
+// Deterministic hooks for offline visual verification; they share the production renderer.
+window.motionPreview={seek(t){cancelAnimationFrame(raf);playing=true;paused=true;rated=true;time=t;completed=t>=(el.variant.value==='original'?3150:durations[el.variant.value]);playing=t<durations[el.variant.value];paused=playing;el.pause.textContent=playing?'Продолжить':'Пауза';el.status.textContent=playing?'Переход 2 → 3 · пауза':'Уровень 3. До следующего уровня — 20 товаров.';paint(frame(t,el.variant.value));products()},get state(){return{time,playing,paused,completed,rated,variant:el.variant.value,reduced:reduced()}}};
+idle();products();if(!reduced())start();else el.status.textContent='Включено системное уменьшение движения. Нажмите «Повторить 2 → 3».';
+</script></html>
